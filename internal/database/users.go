@@ -35,7 +35,7 @@ func (m *UserModel) Insert(user *User) error {
 func (m *UserModel) Get(id int) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	
+
 	query := "SELECT id, email, name, password FROM users WHERE id = $1"
 
 	var user User

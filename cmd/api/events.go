@@ -210,3 +210,90 @@ func (app *application) getAttendeesForEvent(c *gin.Context) {
 
 	c.JSON(http.StatusOK, attendees)
 }
+
+func (app *application) deleteAttendeeFromEvent(c *gin.Context) {
+	// Get the event ID and user ID from the URL parameters
+	eventId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+		return
+	}
+
+	// Get the user ID from the URL parameter
+	userId, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	// Check if the event exists
+	event, err := app.models.Events.Get(eventId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch event"})
+		return
+	}
+
+	if event == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Event not found"})
+		return
+	}
+
+	// Check if the user exists
+	userToDelete, err := app.models.Users.Get(userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user"})
+		return
+	}
+	if userToDelete == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Check if the user is an attendee of the event
+	attendee, err := app.models.Attendees.GetByEventAndAttentee(event.Id, userToDelete.Id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check existing attendees"})
+		return
+	}
+
+	if attendee == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User is not an attendee of the event"})
+		return
+	}
+	// Delete the attendee from the event
+	if err := app.models.Attendees.Delete(userId, eventId); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete attendee from event"})
+		return
+	}
+
+	c.JSON(http.StatusNoContent, nil)
+}
+
+func (app *application) getEventsByAttendee(c *gin.Context) {
+	// Get the user ID from the URL parameter
+	userId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	// Check if the user exists
+	user, err := app.models.Users.Get(userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user"})
+		return
+	}
+	if user == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Fetch all events for the attendee from the database
+	events, err := app.models.Attendees.GetByAttendee(userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch events for attendee"})
+		return
+	}
+
+	c.JSON(http.StatusOK, events)
+}
