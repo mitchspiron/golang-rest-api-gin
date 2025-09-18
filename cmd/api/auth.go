@@ -70,7 +70,12 @@ func (app *application) login(c *gin.Context) {
 	// Retrieve the user from the database
 	existingUser, err := app.models.Users.GetByEmail(auth.Email)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
+		return
+	}
+	if existingUser == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
 	}
 
 	// Compare the provided password with the stored hashed password

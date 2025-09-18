@@ -26,7 +26,7 @@ func (app *application) routes() http.Handler {
 	}
 
 	// Protected routes
-	authGroup := g.Group("/")
+	authGroup := v1.Group("/")
 	authGroup.Use(app.authMiddleware())
 	{
 		// Event routes
