@@ -4,6 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func (app *application) routes() http.Handler {
@@ -38,6 +41,17 @@ func (app *application) routes() http.Handler {
 		// Attendee routes
 		authGroup.DELETE("/events/:id/attendees/:userId", app.deleteAttendeeFromEvent)
 	}
+
+	// Swagger documentation route
+	// Redirect /swagger to /swagger/index.html
+	// This ensures that accessing /swagger will show the Swagger UI
+	g.GET("/swagger/*any", func(c *gin.Context) {
+		if c.Request.RequestURI == "/swagger/" {
+			c.Redirect(302, "/swagger/index.html")
+			return
+		}
+		ginSwagger.WrapHandler(swaggerFiles.Handler)(c)
+	})
 
 	return g
 }

@@ -6,9 +6,22 @@ import (
 	"golang-rest-api-gin/internal/env"
 	"log"
 
+	_ "golang-rest-api-gin/docs"
+
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
 )
+
+// @title Go REST API with Gin
+// @version 1.0
+// @description This is a sample server for a REST API built with Go and Gin.
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
+// Apply the security definition to your endpoints
+// @security BearerAuth
 
 type application struct {
 	port      int
